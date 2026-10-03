@@ -1,0 +1,69 @@
+table Calendar
+	lineageTag: 9892481d-d430-469c-b7b4-691991c313c8
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: yyyy-mm-dd
+		lineageTag: 15418415-672c-4260-af72-6b8b12fba36a
+		summarizeBy: none
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year = YEAR('Calendar'[Date])
+		dataType: int64
+		formatString: 0
+		lineageTag: 5b1cde47-da0b-4ec8-8c43-40e5c8ec6810
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Number' = MONTH('Calendar'[Date])
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 35b1e5a7-64a1-49e2-8bf4-976c5ad27d79
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column Month = FORMAT('Calendar'[Date], "MMM")
+		dataType: string
+		lineageTag: 6dedf30a-d32f-4e14-beea-aac134f66410
+		summarizeBy: none
+		sortByColumn: 'Month Number'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Month Key' = YEAR('Calendar'[Date]) * 100 + MONTH('Calendar'[Date])
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 9f33d050-d4cc-42f4-bc55-1ed262b8e7b4
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Month' = FORMAT('Calendar'[Date], "MMM yy")
+		dataType: string
+		lineageTag: e2419dcc-3d8c-4fed-a14a-046b0ec97498
+		summarizeBy: none
+		sortByColumn: 'Year Month Key'
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter = "Q" & QUARTER('Calendar'[Date])
+		dataType: string
+		lineageTag: dd8c1c92-4a37-4567-a276-10b25d70f47b
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Calendar = calculated
+		mode: import
+		source = CALENDAR(DATE(2023, 1, 1), DATE(2025, 12, 31))
+
+	annotation PBI_Id = calendar
+

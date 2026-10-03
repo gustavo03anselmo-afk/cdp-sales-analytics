@@ -1,0 +1,13 @@
+# Python
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+python/rascunho.ipynb
+
+# Power BI (local cache and user settings, rebuilt on refresh)
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+*.pbix.bak
+
+# Personal notes (Portuguese)
+PASSOS.md

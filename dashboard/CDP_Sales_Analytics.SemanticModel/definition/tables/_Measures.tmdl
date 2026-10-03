@@ -1,0 +1,448 @@
+table _Measures
+	lineageTag: 9ff5678f-feb8-492f-9859-4ecdd3171f58
+
+	measure 'Net Revenue' = SUM ( sales_clean[net_revenue_eur] )
+		formatString: €#,0
+		displayFolder: 1. Core
+		lineageTag: c1862401-a32f-4c1e-9d1e-ed5d3f58b8b5
+
+	measure Orders = COUNTROWS ( sales_clean )
+		formatString: #,0
+		displayFolder: 1. Core
+		lineageTag: e5b41c06-214e-438c-929b-c4cacdb94e4d
+
+	measure 'Avg Order Value' = DIVIDE ( [Net Revenue], [Orders] )
+		formatString: €#,0.00
+		displayFolder: 1. Core
+		lineageTag: 19e322e4-39c2-47e0-87f5-f5be0862f4e2
+
+	measure 'Refund Rate %' = DIVIDE ( CALCULATE ( [Orders], sales_clean[refunded] = "Y" ), [Orders] )
+		formatString: 0.0%
+		displayFolder: 1. Core
+		lineageTag: 8769ee13-6057-49e0-a6b9-d08561e57f85
+
+	measure 'Discounted Orders %' = DIVIDE ( CALCULATE ( [Orders], sales_clean[discount_pct] > 0 ), [Orders] )
+		formatString: 0.0%
+		displayFolder: 1. Core
+		lineageTag: 11e12424-8b8d-4d84-a0c6-8c591d39c39d
+
+	measure 'Avg Discount %' = AVERAGE ( sales_clean[discount_pct] )
+		formatString: 0.0%
+		displayFolder: 1. Core
+		lineageTag: 3e05a889-8736-4c76-ba53-ef3f5365c070
+
+	measure 'Revenue Share %' = DIVIDE ( [Net Revenue], CALCULATE ( [Net Revenue], ALLSELECTED ( sales_clean ) ) )
+		formatString: 0.0%
+		displayFolder: 1. Core
+		lineageTag: cd213dfa-916a-4d9b-8e74-24f22af3757e
+
+	measure 'DLC Share %' = DIVIDE ( CALCULATE ( [Net Revenue], sales_clean[product_type] = "DLC" ), [Net Revenue] )
+		formatString: 0.0%
+		displayFolder: 1. Core
+		lineageTag: bf984ef9-221b-4cab-a2e7-22897db8d370
+
+	measure 'DLC Revenue' = CALCULATE ( [Net Revenue], sales_clean[product_type] = "DLC" )
+		formatString: €#,0
+		displayFolder: 1. Core
+		lineageTag: e10af82f-9f56-48a1-a466-abf73ae71df6
+
+	measure 'Base Game Revenue' = CALCULATE ( [Net Revenue], sales_clean[product_type] = "Base game" )
+		formatString: €#,0
+		displayFolder: 1. Core
+		lineageTag: 98b15c3b-dcca-4b06-b44e-8d17454f2e11
+
+	measure 'PC Share %' = DIVIDE ( CALCULATE ( [Net Revenue], sales_clean[platform_family] = "PC" ), [Net Revenue] )
+		formatString: 0.0%
+		displayFolder: 1. Core
+		lineageTag: e943de99-7f38-4c8b-a5c1-0ca2fc23f1f5
+
+	measure 'Console Share %' = DIVIDE ( CALCULATE ( [Net Revenue], sales_clean[platform_family] <> "PC" ), [Net Revenue] )
+		formatString: 0.0%
+		displayFolder: 1. Core
+		lineageTag: ce2adedd-af65-4106-bb91-dcbee85b79b3
+
+	measure 'GOG Share of PC %' = DIVIDE ( CALCULATE ( [Net Revenue], sales_clean[store] = "GOG.com" ), CALCULATE ( [Net Revenue], sales_clean[platform_family] = "PC" ) )
+		formatString: 0.0%
+		displayFolder: 1. Core
+		lineageTag: 5e8b4db7-95bf-44aa-af21-2b89fd02ef05
+
+	measure 'Europe Share %' = DIVIDE ( CALCULATE ( [Net Revenue], sales_clean[region] IN { "Western Europe", "CEE" } ), [Net Revenue] )
+		formatString: 0.0%
+		displayFolder: 1. Core
+		lineageTag: 79dc563c-b9f0-4691-94e2-a78383ff2d9c
+
+	measure Markets = CALCULATE ( DISTINCTCOUNT ( sales_clean[country] ), sales_clean[country] <> "Unknown" )
+		formatString: #,0
+		displayFolder: 1. Core
+		lineageTag: f9b97c43-4634-494e-ba5d-35ceb5e48cd9
+
+	measure Games = DISTINCTCOUNT ( sales_clean[game] )
+		formatString: #,0
+		displayFolder: 1. Core
+		lineageTag: 90e2c399-35c6-4233-8421-acb59c743dc2
+
+	measure 'Top Game' = MAXX ( TOPN ( 1, VALUES ( sales_clean[game] ), [Net Revenue] ), sales_clean[game] )
+		displayFolder: 4. Labels
+		lineageTag: f9f276df-73ff-4ffa-962c-a8832e74f3e3
+
+	measure 'Top Market' = MAXX ( TOPN ( 1, VALUES ( sales_clean[country] ), [Net Revenue] ), sales_clean[country] )
+		displayFolder: 4. Labels
+		lineageTag: a2d50f26-67dc-4c34-9dcb-18b8ad34df8d
+
+	measure 'Top Platform' = MAXX ( TOPN ( 1, VALUES ( sales_clean[platform] ), [Net Revenue] ), sales_clean[platform] )
+		displayFolder: 4. Labels
+		lineageTag: add518ed-9e81-4c03-a445-faf42d5cea64
+
+	measure 'Top Region' = MAXX ( TOPN ( 1, VALUES ( sales_clean[region] ), [Net Revenue] ), sales_clean[region] )
+		displayFolder: 4. Labels
+		lineageTag: f0f47aa9-3964-48a9-8f2f-5fba816ac937
+
+	measure Target = IF ( ISFILTERED ( sales_clean[game] ) || ISFILTERED ( sales_clean[franchise] ) || ISFILTERED ( sales_clean[platform] ) || ISFILTERED ( sales_clean[country] ) || ISFILTERED ( sales_clean[region] ) || ISFILTERED ( sales_clean[product_type] ) || ISFILTERED ( sales_clean[platform_family] ) || ISFILTERED ( sales_clean[store] ) || ISFILTERED ( sales_clean[discount_band] ) || ISFILTERED ( sales_clean[refunded] ), BLANK (), SUM ( targets[target_eur] ) )
+		formatString: €#,0
+		displayFolder: 2. Target
+		lineageTag: 528070e7-380f-43b3-a257-6219c0ae1a54
+
+	measure 'Achievement %' = DIVIDE ( [Net Revenue], [Target] )
+		formatString: 0.0%
+		displayFolder: 2. Target
+		lineageTag: 4aab88b3-c755-4cb6-a784-5920e2844c3d
+
+	measure 'Variance vs Target' = IF ( NOT ISBLANK ( [Target] ), [Net Revenue] - [Target] )
+		formatString: €#,0;-€#,0
+		displayFolder: 2. Target
+		lineageTag: 76960d30-71ac-4d6d-8b28-b151742d44f7
+
+	measure 'Net Revenue YTD' = TOTALYTD ( [Net Revenue], 'Calendar'[Date] )
+		formatString: €#,0
+		displayFolder: 3. Time
+		lineageTag: 19aabc23-4361-483c-b233-9f9280c1e01e
+
+	measure 'Target YTD' = TOTALYTD ( [Target], 'Calendar'[Date] )
+		formatString: €#,0
+		displayFolder: 3. Time
+		lineageTag: 266a0d0e-9c42-469b-accd-969985dfdc61
+
+	measure 'Achievement Color' = SWITCH ( TRUE (), ISBLANK ( [Achievement %] ), "#6B6B70", [Achievement %] >= 1, "#1E8E5A", [Achievement %] >= 0.95, "#B57600", "#D7141A" )
+		displayFolder: 5. Formatting
+		lineageTag: fabbe773-cd33-4169-82a9-a7b3e93be193
+
+	measure 'Achievement Label' = IF ( ISBLANK ( [Target] ), "target n/a", "target " & FORMAT ( [Target], "€#,0" ) )
+		displayFolder: 4. Labels
+		lineageTag: b605acce-7e4f-4c6e-9219-8a09bb89c8eb
+
+	measure 'Net Revenue PY' = CALCULATE ( [Net Revenue], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+		displayFolder: 3. Time
+		lineageTag: 1ac09fb7-f6e0-4ea5-82ac-f73928004c89
+
+	measure 'Net Revenue vs PY' =
+			VAR _c = [Net Revenue]
+			VAR _p = [Net Revenue PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ), "2023–2025 total",
+					IF ( ISBLANK ( _p ), "no prior year", "vs PY  " & IF ( _c >= _p, "▲ ", "▼ " ) & FORMAT ( DIVIDE ( _c - _p, _p ), "+0.0%;-0.0%" ) ) )
+		displayFolder: 4. Labels
+		lineageTag: b4949f4c-f0d9-4d7a-a1da-e8811fa85475
+
+	measure 'Net Revenue vs PY Color' =
+			VAR _c = [Net Revenue]
+			VAR _p = [Net Revenue PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ) || ISBLANK ( _p ), "#6B6B70", IF ( _c >= _p, "#1E8E5A", "#D7141A" ) )
+		displayFolder: 5. Formatting
+		lineageTag: c87b2238-3a33-47e7-92c3-f1931436316e
+
+	measure 'Orders PY' = CALCULATE ( [Orders], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+		displayFolder: 3. Time
+		lineageTag: 2dcd305d-150a-4cc9-8501-6c1ae161b644
+
+	measure 'Orders vs PY' =
+			VAR _c = [Orders]
+			VAR _p = [Orders PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ), "2023–2025 total",
+					IF ( ISBLANK ( _p ), "no prior year", "vs PY  " & IF ( _c >= _p, "▲ ", "▼ " ) & FORMAT ( DIVIDE ( _c - _p, _p ), "+0.0%;-0.0%" ) ) )
+		displayFolder: 4. Labels
+		lineageTag: 8f990bf2-9082-400d-98b0-e04241aa7c55
+
+	measure 'Orders vs PY Color' =
+			VAR _c = [Orders]
+			VAR _p = [Orders PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ) || ISBLANK ( _p ), "#6B6B70", IF ( _c >= _p, "#1E8E5A", "#D7141A" ) )
+		displayFolder: 5. Formatting
+		lineageTag: a0140915-9be7-4aca-bdcd-8e155ed587ec
+
+	measure 'Avg Order Value PY' = CALCULATE ( [Avg Order Value], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+		displayFolder: 3. Time
+		lineageTag: 82ea10f2-38d7-4460-8777-c330cf8e99fb
+
+	measure 'Avg Order Value vs PY' =
+			VAR _c = [Avg Order Value]
+			VAR _p = [Avg Order Value PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ), "2023–2025 total",
+					IF ( ISBLANK ( _p ), "no prior year", "vs PY  " & IF ( _c >= _p, "▲ ", "▼ " ) & FORMAT ( DIVIDE ( _c - _p, _p ), "+0.0%;-0.0%" ) ) )
+		displayFolder: 4. Labels
+		lineageTag: a459eaa2-b44b-40b2-82d1-d0382f53c89f
+
+	measure 'Avg Order Value vs PY Color' =
+			VAR _c = [Avg Order Value]
+			VAR _p = [Avg Order Value PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ) || ISBLANK ( _p ), "#6B6B70", IF ( _c >= _p, "#1E8E5A", "#D7141A" ) )
+		displayFolder: 5. Formatting
+		lineageTag: 5ff97d46-e8fd-4b59-bafe-d0de6e9479e3
+
+	measure 'Refund Rate % PY' = CALCULATE ( [Refund Rate %], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+		displayFolder: 3. Time
+		lineageTag: d8a8ec59-c46c-4c13-81c3-2e40e7f9e1a0
+
+	measure 'Refund Rate % vs PY' =
+			VAR _c = [Refund Rate %]
+			VAR _p = [Refund Rate % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ), "2023–2025 total",
+					IF ( ISBLANK ( _p ), "no prior year", "vs PY  " & IF ( _c >= _p, "▲ ", "▼ " ) & FORMAT ( ( _c - _p ) * 100, "+0.0;-0.0" ) & " pp" ) )
+		displayFolder: 4. Labels
+		lineageTag: 7be4c096-f417-4116-82c1-41c27aeaa71d
+
+	measure 'Refund Rate % vs PY Color' =
+			VAR _c = [Refund Rate %]
+			VAR _p = [Refund Rate % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ) || ISBLANK ( _p ), "#6B6B70", IF ( _c <= _p, "#1E8E5A", "#D7141A" ) )
+		displayFolder: 5. Formatting
+		lineageTag: 596e7c4e-9f72-4744-b61b-5ca3759dbb71
+
+	measure 'Discounted Orders % PY' = CALCULATE ( [Discounted Orders %], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+		displayFolder: 3. Time
+		lineageTag: 38f7289f-18e5-43e5-b39e-4328d7cdb18c
+
+	measure 'Discounted Orders % vs PY' =
+			VAR _c = [Discounted Orders %]
+			VAR _p = [Discounted Orders % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ), "2023–2025 total",
+					IF ( ISBLANK ( _p ), "no prior year", "vs PY  " & IF ( _c >= _p, "▲ ", "▼ " ) & FORMAT ( ( _c - _p ) * 100, "+0.0;-0.0" ) & " pp" ) )
+		displayFolder: 4. Labels
+		lineageTag: f99a0320-a2e2-478c-806d-a1d4b8f237cd
+
+	measure 'Discounted Orders % vs PY Color' =
+			VAR _c = [Discounted Orders %]
+			VAR _p = [Discounted Orders % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ) || ISBLANK ( _p ), "#6B6B70", IF ( _c >= _p, "#1E8E5A", "#D7141A" ) )
+		displayFolder: 5. Formatting
+		lineageTag: cc72620f-d608-4aba-afce-3a35af1eddcc
+
+	measure 'Avg Discount % PY' = CALCULATE ( [Avg Discount %], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+		displayFolder: 3. Time
+		lineageTag: bc200c97-7fe2-4884-a95c-dfecc0eb6b0e
+
+	measure 'Avg Discount % vs PY' =
+			VAR _c = [Avg Discount %]
+			VAR _p = [Avg Discount % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ), "2023–2025 total",
+					IF ( ISBLANK ( _p ), "no prior year", "vs PY  " & IF ( _c >= _p, "▲ ", "▼ " ) & FORMAT ( ( _c - _p ) * 100, "+0.0;-0.0" ) & " pp" ) )
+		displayFolder: 4. Labels
+		lineageTag: 1f28f73e-a914-4018-b1f9-4be9568030ef
+
+	measure 'Avg Discount % vs PY Color' =
+			VAR _c = [Avg Discount %]
+			VAR _p = [Avg Discount % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ) || ISBLANK ( _p ), "#6B6B70", IF ( _c <= _p, "#1E8E5A", "#D7141A" ) )
+		displayFolder: 5. Formatting
+		lineageTag: df7bcdf1-ab96-4901-b8dd-50b85344cfb4
+
+	measure 'DLC Share % PY' = CALCULATE ( [DLC Share %], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+		displayFolder: 3. Time
+		lineageTag: a057447e-4221-449f-9f88-fe93ee18cf8f
+
+	measure 'DLC Share % vs PY' =
+			VAR _c = [DLC Share %]
+			VAR _p = [DLC Share % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ), "2023–2025 total",
+					IF ( ISBLANK ( _p ), "no prior year", "vs PY  " & IF ( _c >= _p, "▲ ", "▼ " ) & FORMAT ( ( _c - _p ) * 100, "+0.0;-0.0" ) & " pp" ) )
+		displayFolder: 4. Labels
+		lineageTag: ffd2582a-1d2a-4000-a058-3e8da7225f84
+
+	measure 'DLC Share % vs PY Color' =
+			VAR _c = [DLC Share %]
+			VAR _p = [DLC Share % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ) || ISBLANK ( _p ), "#6B6B70", IF ( _c >= _p, "#1E8E5A", "#D7141A" ) )
+		displayFolder: 5. Formatting
+		lineageTag: 4d811d4c-2871-447a-aa01-6f041943ddc8
+
+	measure 'DLC Revenue PY' = CALCULATE ( [DLC Revenue], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+		displayFolder: 3. Time
+		lineageTag: 23fdd2c7-e406-4e80-b051-e8c4a1cdc746
+
+	measure 'DLC Revenue vs PY' =
+			VAR _c = [DLC Revenue]
+			VAR _p = [DLC Revenue PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ), "2023–2025 total",
+					IF ( ISBLANK ( _p ), "no prior year", "vs PY  " & IF ( _c >= _p, "▲ ", "▼ " ) & FORMAT ( DIVIDE ( _c - _p, _p ), "+0.0%;-0.0%" ) ) )
+		displayFolder: 4. Labels
+		lineageTag: 5d1fb387-cdb1-46d0-b1cd-f2f7d09fa1cb
+
+	measure 'DLC Revenue vs PY Color' =
+			VAR _c = [DLC Revenue]
+			VAR _p = [DLC Revenue PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ) || ISBLANK ( _p ), "#6B6B70", IF ( _c >= _p, "#1E8E5A", "#D7141A" ) )
+		displayFolder: 5. Formatting
+		lineageTag: 92f75bd7-b89b-43c7-ba8c-f12fd3acb22a
+
+	measure 'Base Game Revenue PY' = CALCULATE ( [Base Game Revenue], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+		displayFolder: 3. Time
+		lineageTag: f20fc0c6-0b3d-4f9c-a7b7-811b08e60626
+
+	measure 'Base Game Revenue vs PY' =
+			VAR _c = [Base Game Revenue]
+			VAR _p = [Base Game Revenue PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ), "2023–2025 total",
+					IF ( ISBLANK ( _p ), "no prior year", "vs PY  " & IF ( _c >= _p, "▲ ", "▼ " ) & FORMAT ( DIVIDE ( _c - _p, _p ), "+0.0%;-0.0%" ) ) )
+		displayFolder: 4. Labels
+		lineageTag: 7c43ceb3-92e5-4cf0-b1dd-20eb17deb1f8
+
+	measure 'Base Game Revenue vs PY Color' =
+			VAR _c = [Base Game Revenue]
+			VAR _p = [Base Game Revenue PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ) || ISBLANK ( _p ), "#6B6B70", IF ( _c >= _p, "#1E8E5A", "#D7141A" ) )
+		displayFolder: 5. Formatting
+		lineageTag: ec86bf7e-fd2d-4ea7-8fae-abd29007b85f
+
+	measure 'PC Share % PY' = CALCULATE ( [PC Share %], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+		displayFolder: 3. Time
+		lineageTag: 7843e7a0-63f5-4cdb-b69f-203da5c22e97
+
+	measure 'PC Share % vs PY' =
+			VAR _c = [PC Share %]
+			VAR _p = [PC Share % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ), "2023–2025 total",
+					IF ( ISBLANK ( _p ), "no prior year", "vs PY  " & IF ( _c >= _p, "▲ ", "▼ " ) & FORMAT ( ( _c - _p ) * 100, "+0.0;-0.0" ) & " pp" ) )
+		displayFolder: 4. Labels
+		lineageTag: 518f8e4c-fb6f-48c2-8368-14a5af8468c1
+
+	measure 'PC Share % vs PY Color' =
+			VAR _c = [PC Share %]
+			VAR _p = [PC Share % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ) || ISBLANK ( _p ), "#6B6B70", IF ( _c >= _p, "#1E8E5A", "#D7141A" ) )
+		displayFolder: 5. Formatting
+		lineageTag: 57a6b2ff-8545-4d47-9434-612d15c8ef45
+
+	measure 'Console Share % PY' = CALCULATE ( [Console Share %], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+		displayFolder: 3. Time
+		lineageTag: bbdfd211-8d81-463c-8fd1-6ef92bd5f55b
+
+	measure 'Console Share % vs PY' =
+			VAR _c = [Console Share %]
+			VAR _p = [Console Share % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ), "2023–2025 total",
+					IF ( ISBLANK ( _p ), "no prior year", "vs PY  " & IF ( _c >= _p, "▲ ", "▼ " ) & FORMAT ( ( _c - _p ) * 100, "+0.0;-0.0" ) & " pp" ) )
+		displayFolder: 4. Labels
+		lineageTag: 81d58466-3da5-44a8-b260-b6c8c16a7390
+
+	measure 'Console Share % vs PY Color' =
+			VAR _c = [Console Share %]
+			VAR _p = [Console Share % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ) || ISBLANK ( _p ), "#6B6B70", IF ( _c >= _p, "#1E8E5A", "#D7141A" ) )
+		displayFolder: 5. Formatting
+		lineageTag: 4d44a3e4-ec14-4ccb-9e66-829402ad0066
+
+	measure 'GOG Share of PC % PY' = CALCULATE ( [GOG Share of PC %], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+		displayFolder: 3. Time
+		lineageTag: e90ecc59-0a62-4a49-9450-3766302845d0
+
+	measure 'GOG Share of PC % vs PY' =
+			VAR _c = [GOG Share of PC %]
+			VAR _p = [GOG Share of PC % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ), "2023–2025 total",
+					IF ( ISBLANK ( _p ), "no prior year", "vs PY  " & IF ( _c >= _p, "▲ ", "▼ " ) & FORMAT ( ( _c - _p ) * 100, "+0.0;-0.0" ) & " pp" ) )
+		displayFolder: 4. Labels
+		lineageTag: ca3614e4-048a-47d5-9016-c5377083271a
+
+	measure 'GOG Share of PC % vs PY Color' =
+			VAR _c = [GOG Share of PC %]
+			VAR _p = [GOG Share of PC % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ) || ISBLANK ( _p ), "#6B6B70", IF ( _c >= _p, "#1E8E5A", "#D7141A" ) )
+		displayFolder: 5. Formatting
+		lineageTag: e0ae4fcf-96b6-4cd4-b35f-33fcfc13ddc4
+
+	measure 'Europe Share % PY' = CALCULATE ( [Europe Share %], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+		displayFolder: 3. Time
+		lineageTag: b521a995-d817-4018-8644-4f8a3cc78316
+
+	measure 'Europe Share % vs PY' =
+			VAR _c = [Europe Share %]
+			VAR _p = [Europe Share % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ), "2023–2025 total",
+					IF ( ISBLANK ( _p ), "no prior year", "vs PY  " & IF ( _c >= _p, "▲ ", "▼ " ) & FORMAT ( ( _c - _p ) * 100, "+0.0;-0.0" ) & " pp" ) )
+		displayFolder: 4. Labels
+		lineageTag: afc19848-3e1f-497b-b7b8-cd082830ee13
+
+	measure 'Europe Share % vs PY Color' =
+			VAR _c = [Europe Share %]
+			VAR _p = [Europe Share % PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ) || ISBLANK ( _p ), "#6B6B70", IF ( _c >= _p, "#1E8E5A", "#D7141A" ) )
+		displayFolder: 5. Formatting
+		lineageTag: 591062b7-f3df-4979-9f6f-6fa8df5ae24b
+
+	measure 'Markets PY' = CALCULATE ( [Markets], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+		displayFolder: 3. Time
+		lineageTag: 1a676816-fe7b-4f45-a1fb-cde637eb6968
+
+	measure 'Markets vs PY' =
+			VAR _c = [Markets]
+			VAR _p = [Markets PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ), "2023–2025 total",
+					IF ( ISBLANK ( _p ), "no prior year", "vs PY  " & IF ( _c >= _p, "▲ ", "▼ " ) & FORMAT ( _c - _p, "+0;-0" ) ) )
+		displayFolder: 4. Labels
+		lineageTag: 2ea79700-ef9e-425c-bfc0-45802bbc5c16
+
+	measure 'Markets vs PY Color' =
+			VAR _c = [Markets]
+			VAR _p = [Markets PY]
+			RETURN
+				IF ( NOT HASONEVALUE ( 'Calendar'[Year] ) || ISBLANK ( _p ), "#6B6B70", IF ( _c >= _p, "#1E8E5A", "#D7141A" ) )
+		displayFolder: 5. Formatting
+		lineageTag: 194523e8-8257-45da-9a7e-7eac1adfef2a
+
+	measure 'Data As Of' = "Data as of " & FORMAT ( CALCULATE ( MAX ( sales_clean[order_date] ), ALL ( sales_clean ) ), "dd MMM yyyy" )
+		displayFolder: 4. Labels
+		lineageTag: ce3f1ec5-1d4c-4965-9c43-01fb860d5cb5
+
+	measure Disclaimer = "All figures are fictitious and generated for portfolio purposes. Not affiliated with or endorsed by CD PROJEKT S.A."
+		displayFolder: 4. Labels
+		lineageTag: 7f710a54-1b80-436e-a805-34509ebcfbc2
+
+	column Dummy
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: c2395f2d-3fa2-405d-95c7-278bb758c110
+		summarizeBy: none
+		sourceColumn: [Dummy]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _Measures = calculated
+		mode: import
+		source = ROW ( "Dummy", 0 )
+

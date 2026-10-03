@@ -1,0 +1,8 @@
+relationship c25156ea-4618-4b36-abf7-f59242de3ced
+	fromColumn: sales_clean.order_date
+	toColumn: Calendar.Date
+
+relationship 175ed834-734a-4509-bc38-d2fbcb979333
+	fromColumn: targets.month
+	toColumn: Calendar.Date
+

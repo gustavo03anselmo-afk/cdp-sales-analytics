@@ -1,0 +1,5 @@
+expression DataFolder = "C:\Users\Gustavo Anselmo\Documents\cdp-basic\data\" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: d8573202-96bd-4f63-9968-fb0b347d582c
+
+	annotation PBI_ResultType = Text
+

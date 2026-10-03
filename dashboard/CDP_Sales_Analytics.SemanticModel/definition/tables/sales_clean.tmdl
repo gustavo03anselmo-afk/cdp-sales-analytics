@@ -1,0 +1,159 @@
+table sales_clean
+	lineageTag: 4892a747-f8eb-476a-b94d-fcd376740755
+
+	column order_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 544d65bc-a868-4910-9e52-98d238a21fb4
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_date
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 639b55b7-96bc-454d-939a-337f121c2e9e
+		summarizeBy: none
+		sourceColumn: order_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column game
+		dataType: string
+		lineageTag: f89a1d86-6ca7-4dd0-82e8-64e56f6c2403
+		summarizeBy: none
+		sourceColumn: game
+
+		annotation SummarizationSetBy = Automatic
+
+	column franchise
+		dataType: string
+		lineageTag: 7f17b6bf-f416-4240-b20b-dbcfc5684843
+		summarizeBy: none
+		sourceColumn: franchise
+
+		annotation SummarizationSetBy = Automatic
+
+	column platform
+		dataType: string
+		lineageTag: 30975c5a-2720-4930-8710-8e20c408dd5f
+		summarizeBy: none
+		sourceColumn: platform
+
+		annotation SummarizationSetBy = Automatic
+
+	column country
+		dataType: string
+		lineageTag: c01925a2-4cf3-47ac-9412-98f60462d8b6
+		summarizeBy: none
+		sourceColumn: country
+
+		annotation SummarizationSetBy = Automatic
+
+	column region
+		dataType: string
+		lineageTag: 6b1fce14-9be9-4084-a46f-a60c26c8464b
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	column price_eur
+		dataType: double
+		formatString: €#,0.00
+		lineageTag: 62382ff0-0960-4a53-80fa-8b0a816870c7
+		summarizeBy: none
+		sourceColumn: price_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column discount_pct
+		dataType: double
+		formatString: 0%
+		lineageTag: dbf877a2-a49c-48a5-a5cc-c817a87d69c9
+		summarizeBy: none
+		sourceColumn: discount_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	column refunded
+		dataType: string
+		lineageTag: db6b7c86-71b8-41cc-84fe-5e1911d00fea
+		summarizeBy: none
+		sourceColumn: refunded
+
+		annotation SummarizationSetBy = Automatic
+
+	column net_revenue_eur
+		dataType: double
+		formatString: €#,0.00
+		lineageTag: 85f331d9-77b6-4647-8b21-08d16bafd0c2
+		summarizeBy: none
+		sourceColumn: net_revenue_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_type
+		dataType: string
+		lineageTag: 3fd1f9e7-f5cc-4511-b4a1-938a9c7d0d8c
+		summarizeBy: none
+		sourceColumn: product_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column platform_family
+		dataType: string
+		lineageTag: 6e5613e0-4086-4893-b7fc-cdbc69ab7070
+		summarizeBy: none
+		sourceColumn: platform_family
+
+		annotation SummarizationSetBy = Automatic
+
+	column store
+		dataType: string
+		lineageTag: ccfe7885-e431-4a03-ad98-6ac299094763
+		summarizeBy: none
+		sourceColumn: store
+
+		annotation SummarizationSetBy = Automatic
+
+	column discount_band
+		dataType: string
+		lineageTag: 8c974fcb-aa1f-4827-86a0-e854af43a67b
+		summarizeBy: none
+		sourceColumn: discount_band
+		sortByColumn: discount_band_order
+
+		annotation SummarizationSetBy = Automatic
+
+	column discount_band_order
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: d7789565-111a-492e-ad93-b6b8385c6338
+		summarizeBy: none
+		sourceColumn: discount_band_order
+
+		annotation SummarizationSetBy = Automatic
+
+	partition sales_clean = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "clean\sales_clean.csv"), [Delimiter=",", Columns=11, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Typed = Table.TransformColumnTypes(Headers, {{"order_id", Int64.Type}, {"order_date", type date}, {"game", type text}, {"franchise", type text}, {"platform", type text}, {"country", type text}, {"region", type text}, {"price_eur", type number}, {"discount_pct", type number}, {"refunded", type text}, {"net_revenue_eur", type number}}, "en-US"),
+				    AddProduct = Table.AddColumn(Typed, "product_type", each if List.Contains({"The Witcher 3: Hearts of Stone", "The Witcher 3: Blood and Wine", "Cyberpunk 2077: Phantom Liberty"}, [game]) then "DLC" else "Base game", type text),
+				    AddFamily = Table.AddColumn(AddProduct, "platform_family", each if Text.StartsWith([platform], "PC") then "PC" else if Text.StartsWith([platform], "PlayStation") then "PlayStation" else if Text.StartsWith([platform], "Xbox") then "Xbox" else "Nintendo", type text),
+				    AddStore = Table.AddColumn(AddFamily, "store", each if [platform] = "PC - Steam" then "Steam" else if [platform] = "PC - GOG" then "GOG.com" else if [platform_family] = "PlayStation" then "PlayStation Store" else if [platform_family] = "Xbox" then "Microsoft Store" else "Nintendo eShop", type text),
+				    AddBand = Table.AddColumn(AddStore, "discount_band", each if [discount_pct] = 0 then "Full price" else if [discount_pct] <= 0.25 then "1-25% off" else if [discount_pct] <= 0.5 then "26-50% off" else "51%+ off", type text),
+				    AddBandOrder = Table.AddColumn(AddBand, "discount_band_order", each if [discount_pct] = 0 then 1 else if [discount_pct] <= 0.25 then 2 else if [discount_pct] <= 0.5 then 3 else 4, Int64.Type)
+				in
+				    AddBandOrder
+
+	annotation PBI_ResultType = Table
+

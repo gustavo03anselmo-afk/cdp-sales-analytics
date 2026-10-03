@@ -1,0 +1,36 @@
+table targets
+	lineageTag: 6060a299-89c0-4ee4-981c-474b29275584
+
+	column month
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: fc35e3ab-8504-4618-9a66-25ba2be20826
+		summarizeBy: none
+		sourceColumn: month
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column target_eur
+		dataType: double
+		isHidden
+		formatString: €#,0
+		lineageTag: 38032c70-3870-47dc-acf0-51d97cec4a32
+		summarizeBy: none
+		sourceColumn: target_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	partition targets = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "raw\targets.csv"), [Delimiter=",", Columns=2, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Typed = Table.TransformColumnTypes(Headers, {{"month", type date}, {"target_eur", type number}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table
+
