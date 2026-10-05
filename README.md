@@ -133,4 +133,4 @@ docs/            screenshots
 
 ---
 
-Developed by **Gustavo Anselmo** | [GitHub](https://github.com/gustavo03anselmo-afk)
+Developed by **Gustavo Anselmo** | [LinkedIn](https://www.linkedin.com/in/g-anselmo/) | [GitHub](https://github.com/gustavo03anselmo-afk)
